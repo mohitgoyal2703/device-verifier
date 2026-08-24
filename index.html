@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Device Verification</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+  <style>
+    body {
+      background: #0f172a;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    .card {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 320px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border-left-color: #38bdf8;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px auto;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    h2 { margin: 0 0 8px 0; font-size: 18px; }
+    p { color: #94a3b8; font-size: 14px; margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="spinner" id="spinner"></div>
+    <h2 id="status">Verifying Device...</h2>
+    <p id="subtext">Please wait a moment...</p>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    FingerprintJS.load()
+      .then(fp => fp.get())
+      .then(result => {
+        document.getElementById('status').innerText = "✅ Verified!";
+        document.getElementById('subtext').innerText = "Returning to bot...";
+        
+        // Native sendData transmits back to MessageHandler(filters.StatusUpdate.WEB_APP_DATA)
+        tg.sendData(JSON.stringify({ device_hash: result.visitorId }));
+      })
+      .catch(() => {
+        document.getElementById('status').innerText = "⚠️ Error";
+        document.getElementById('subtext').innerText = "Please tap again.";
+      });
+  </script>
+</body>
+</html>
